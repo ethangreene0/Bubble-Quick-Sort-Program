@@ -9,13 +9,13 @@ void copy_array(const int source[], int dest[], int size);
 void quick_sort(int arr[], int low, int high);
 int partition(int arr[], int low, int high);
 void bubble_sort(int arr[], int size);
-void handle_sorting(int numbers[2][100], int m, int choice);
-void re_generate_random(int numbers[2][100], int n, int m);
-void prompt_and_sort(int numbers[2][100], int n, int m);
+void handle_sorting(int **numbers, int m, int choice);
+void re_generate_random(int **numbers, int n, int m);
+void prompt_and_sort(int **numbers, int n, int m);
+void clear_input_buffer();
 
 int main() {
     int n, m;
-    int numbers[2][m]; // 2D array to hold the numbers
 
     srand(time(NULL)); // Seed for random number generation
 
@@ -37,31 +37,47 @@ int main() {
         printf("Enter the array length (m): ");
         scanf("%d", &m);
     }
-
-    // Input n numbers
-    printf("Enter n numbers: ");
-    int user_input_count = 0; // Keep track of user input count
-    for (int i = 0; i < n; i++) {
-        if (scanf("%d", &numbers[0][i]) != 1) {
-            printf("Invalid input detected. Filling remaining numbers with random values.\n");
-            generate_random_numbers(numbers[0], i, n, 10000);
-            user_input_count = i; // Capture how many numbers the user actually entered
-            break;
-        }
-        user_input_count++;
+    int **numbers = (int **)malloc(2 * sizeof(int *));
+    for (int i = 0; i < 2; i++) {
+        numbers[i] = (int *)malloc(m * sizeof(int));
     }
 
+    printf("Enter n elements: ");
+    int user_input_count = 0; // Keep track of user input count
+
+    for (int i = 0; i < n; i++) {
+        if (scanf("%d", &numbers[0][i]) != 1) {
+            printf("Invalid input detected. Exiting input loop.\n");
+            clear_input_buffer();
+            break;  // Exit the loop on invalid input
+        }
+        printf("%d", numbers[0][i]);
+        user_input_count++; // Increment valid input count
+
+    }
+    printf("%d", user_input_count);
+
+
+    if (user_input_count < n){
+        generate_random_numbers(numbers[0],user_input_count,m,10000);
+    }
     // Fill remaining positions with random numbers if n < m
     if (n < m) {
         generate_random_numbers(numbers[0], n, m, 10000);
     }
 
     // Display the number of user-entered and randomly generated numbers
-    printf("\nYou entered %d numbers, ", user_input_count);
+    printf("\nYou entered %d number(s), ", user_input_count);
     printf("%d randomly generated numbers will be generated\n", m - user_input_count);
 
     // Start the sorting and interaction process
     prompt_and_sort(numbers, n, m);
+
+    // Free dynamically allocated memory
+    for (int i = 0; i < 2; i++) {
+        free(numbers[i]);
+    }
+    free(numbers);
 
     return 0;
 }
@@ -133,7 +149,7 @@ void bubble_sort(int arr[], const int size) {
 }
 
 // Function to handle sorting based on user input
-void handle_sorting(int numbers[2][100], int m, int choice) {
+void handle_sorting(int **numbers, int m, int choice) {
     copy_array(numbers[0], numbers[1], m); // Copy to second row before sorting
 
     time_t time1, time2;
@@ -153,14 +169,14 @@ void handle_sorting(int numbers[2][100], int m, int choice) {
 }
 
 // Function to regenerate random numbers and sort
-void re_generate_random(int numbers[2][100], int n, int m) {
+void re_generate_random(int **numbers, int n, int m) {
     generate_random_numbers(numbers[0], n, m, 10000);
     print_array(numbers[0], m, "Original Array with new random numbers");
     prompt_and_sort(numbers, n, m);
 }
 
 // Function to handle user prompts and sorting
-void prompt_and_sort(int numbers[2][100], int n, int m) {
+void prompt_and_sort(int **numbers, int n, int m) {
     int choice;
     char command;
 
@@ -190,4 +206,7 @@ void prompt_and_sort(int numbers[2][100], int n, int m) {
             printf("Invalid command. Try again.\n");
         }
     }
+}
+void clear_input_buffer() {
+    while (getchar() != '\n'); // Clear the buffer until newline
 }
